@@ -27,6 +27,17 @@ def issue_video_recorder():
     employee = Employee.query.get(data['employee_id'])
     if not employee:
         return jsonify({'error': 'Сотрудник не найден'}), 404
+
+    # Ограничение: одному сотруднику может быть выдан только один видеорегистратор одновременно
+    existing_active_issue_for_employee = VideoRecorderIssue.query.filter_by(
+        employee_id=data['employee_id'],
+        status='issued'
+    ).first()
+    if existing_active_issue_for_employee:
+        return jsonify({
+            'error': 'Сотруднику уже выдан видеорегистратор. Сначала оформите возврат.',
+            'active_issue': existing_active_issue_for_employee.to_dict()
+        }), 400
     
     new_issue = VideoRecorderIssue(
         video_recorder_id=data['video_recorder_id'],
