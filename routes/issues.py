@@ -112,11 +112,12 @@ def get_history():
     issues = VideoRecorderIssue.query
     returns = VideoRecorderReturn.query
     
-    if video_recorder_id:
+    # Используем явную проверку на None, чтобы корректно обрабатывать id = 0
+    if video_recorder_id is not None:
         issues = issues.filter_by(video_recorder_id=video_recorder_id)
         returns = returns.filter_by(video_recorder_id=video_recorder_id)
     
-    if employee_id:
+    if employee_id is not None:
         issues = issues.filter_by(employee_id=employee_id)
         returns = returns.filter_by(employee_id=employee_id)
     
