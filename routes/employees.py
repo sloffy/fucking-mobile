@@ -23,7 +23,7 @@ def get_employees():
 @jwt_required()
 def create_employee():
     """UC4: Добавление сотрудника"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может добавлять)
@@ -65,7 +65,7 @@ def get_employee(employee_id):
 @jwt_required()
 def update_employee(employee_id):
     """UC4: Редактирование сотрудника"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может редактировать)
@@ -100,7 +100,7 @@ def update_employee(employee_id):
 @jwt_required()
 def delete_employee(employee_id):
     """UC4: Удаление сотрудника"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может удалять)
@@ -128,7 +128,7 @@ def delete_employee(employee_id):
 @jwt_required()
 def upload_employee_photo(employee_id):
     """Загрузка фотографии сотрудника"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может загружать фотографии)

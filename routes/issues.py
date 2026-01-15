@@ -9,7 +9,7 @@ issues_bp = Blueprint('issues', __name__)
 @jwt_required()
 def issue_video_recorder():
     """UC5: Инициализация выдачи видеорегистратора сотруднику"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     
     data = request.get_json()
     
@@ -46,7 +46,7 @@ def issue_video_recorder():
 @jwt_required()
 def return_video_recorder():
     """UC6: Инициализация возврата видеорегистратора"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     
     data = request.get_json()
     

@@ -16,7 +16,7 @@ def get_video_recorders():
 @jwt_required()
 def create_video_recorder():
     """UC3: Добавление видеорегистратора"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может добавлять)
@@ -56,7 +56,7 @@ def get_video_recorder(video_recorder_id):
 @jwt_required()
 def update_video_recorder(video_recorder_id):
     """UC3: Редактирование видеорегистратора"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может редактировать)
@@ -90,7 +90,7 @@ def update_video_recorder(video_recorder_id):
 @jwt_required()
 def delete_video_recorder(video_recorder_id):
     """UC3: Удаление видеорегистратора"""
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может удалять)

@@ -22,7 +22,8 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'Неверный логин или пароль'}), 401
     
-    access_token = create_access_token(identity=user.username)
+    # Используем user.id как строку для JWT identity
+    access_token = create_access_token(identity=str(user.id))
     
     return jsonify({
         'access_token': access_token,
@@ -33,7 +34,10 @@ def login():
 @jwt_required()
 def register():
     """Создание нового пользователя (требуется авторизация)"""
-    current_user_id = get_jwt_identity()
+    try:
+        current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Неверный формат токена'}), 401
     current_user = User.query.get(current_user_id)
     
     # Проверка прав (только администратор может создавать пользователей)
@@ -71,8 +75,11 @@ def register():
 @jwt_required()
 def get_current_user():
     """Получение информации о текущем пользователе"""
-    current_username = get_jwt_identity()
-    user = User.query.filter_by(username=current_username).first()
+    try:
+        current_user_id = int(get_jwt_identity())  # Преобразуем строку в int
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Неверный формат токена'}), 401
+    user = User.query.get(current_user_id)
     
     if not user:
         return jsonify({'error': 'Пользователь не найден'}), 404
