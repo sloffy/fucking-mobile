@@ -22,7 +22,7 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'Неверный логин или пароль'}), 401
     
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=user.username)
     
     return jsonify({
         'access_token': access_token,
