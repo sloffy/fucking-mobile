@@ -71,8 +71,8 @@ def register():
 @jwt_required()
 def get_current_user():
     """Получение информации о текущем пользователе"""
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    current_username = get_jwt_identity()
+    user = User.query.filter_by(username=current_username).first()
     
     if not user:
         return jsonify({'error': 'Пользователь не найден'}), 404
