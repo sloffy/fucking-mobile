@@ -55,14 +55,25 @@ def index():
 def health():
     return {'status': 'ok'}
 
+def init_database():
+    """Инициализация базы данных: создание таблиц и ролей"""
+    try:
+        with app.app_context():
+            db.create_all()
+            # Создание ролей по умолчанию, если их нет
+            if Role.query.count() == 0:
+                admin_role = Role(name='admin', description='Администратор с полными правами')
+                operator_role = Role(name='operator', description='Оператор, может выдавать и принимать видеорегистраторы')
+                db.session.add(admin_role)
+                db.session.add(operator_role)
+                db.session.commit()
+                print("Роли созданы: admin, operator")
+    except Exception as e:
+        print(f"Ошибка при инициализации БД: {e}")
+
+# Инициализация БД при импорте (для WSGI на PythonAnywhere)
+# На локальной машине это также сработает
+init_database()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Создание ролей по умолчанию, если их нет
-        if Role.query.count() == 0:
-            admin_role = Role(name='admin', description='Администратор с полными правами')
-            operator_role = Role(name='operator', description='Оператор, может выдавать и принимать видеорегистраторы')
-            db.session.add(admin_role)
-            db.session.add(operator_role)
-            db.session.commit()
     app.run(debug=True, host='0.0.0.0', port=5000)
