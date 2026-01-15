@@ -107,7 +107,7 @@ $vrs
 $vrCreateUrl = "$BaseUrl/api/video-recorders"
 
 $vrCreateBody = @{
-    number = "VR-001"
+    number = "VR-003"
     status = "available"  # available/issued
 } | ConvertTo-Json
 
