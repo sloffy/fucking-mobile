@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import VideoRecorder, User
+from models import VideoRecorder, User, VideoRecorderIssue, VideoRecorderReturn
 from database import db
 
 video_recorders_bp = Blueprint('video_recorders', __name__)
@@ -106,7 +106,18 @@ def delete_video_recorder(video_recorder_id):
     if video_recorder.status == 'issued':
         return jsonify({'error': 'Нельзя удалить видеорегистратор, который сейчас выдан'}), 400
     
-    db.session.delete(video_recorder)
-    db.session.commit()
-    
-    return jsonify({'message': 'Видеорегистратор удалён'}), 200
+    try:
+        # Удаляем видеорегистратор, история выдач/возвратов сохранится
+        # (внешние ключи установятся в NULL благодаря ondelete='SET NULL')
+        db.session.delete(video_recorder)
+        db.session.commit()
+        return jsonify({'message': 'Видеорегистратор удалён'}), 200
+    except Exception as e:
+        db.session.rollback()
+        # Если БД не поддерживает SET NULL, обновляем внешние ключи вручную
+        from models import VideoRecorderIssue, VideoRecorderReturn
+        VideoRecorderIssue.query.filter_by(video_recorder_id=video_recorder_id).update({'video_recorder_id': None})
+        VideoRecorderReturn.query.filter_by(video_recorder_id=video_recorder_id).update({'video_recorder_id': None})
+        db.session.delete(video_recorder)
+        db.session.commit()
+        return jsonify({'message': 'Видеорегистратор удалён, история сохранена'}), 200

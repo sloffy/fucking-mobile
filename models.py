@@ -19,9 +19,10 @@ class Employee(db.Model):
     employee_number = db.Column(db.String(6), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    photo = db.relationship('EmployeePhoto', backref='employee', uselist=False, lazy=True)
-    issues = db.relationship('VideoRecorderIssue', backref='employee', lazy=True)
-    returns = db.relationship('VideoRecorderReturn', backref='employee', lazy=True)
+    photo = db.relationship('EmployeePhoto', backref='employee', uselist=False, lazy=True, cascade='all, delete-orphan')
+    # Не удаляем историю при удалении сотрудника
+    issues = db.relationship('VideoRecorderIssue', backref='employee', lazy=True, passive_deletes=True)
+    returns = db.relationship('VideoRecorderReturn', backref='employee', lazy=True, passive_deletes=True)
     
     def to_dict(self):
         return {
@@ -41,8 +42,9 @@ class VideoRecorder(db.Model):
     status = db.Column(db.String(20), default='available', nullable=False)  # available/issued
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    issues = db.relationship('VideoRecorderIssue', backref='video_recorder', lazy=True)
-    returns = db.relationship('VideoRecorderReturn', backref='video_recorder', lazy=True)
+    # Не удаляем историю при удалении видеорегистратора
+    issues = db.relationship('VideoRecorderIssue', backref='video_recorder', lazy=True, passive_deletes=True)
+    returns = db.relationship('VideoRecorderReturn', backref='video_recorder', lazy=True, passive_deletes=True)
     
     def to_dict(self):
         return {
@@ -89,8 +91,9 @@ class VideoRecorderIssue(db.Model):
     __tablename__ = 'video_recorder_issues'
     
     id = db.Column(db.Integer, primary_key=True)
-    video_recorder_id = db.Column(db.Integer, db.ForeignKey('video_recorders.id'), nullable=False)
-    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False)
+    # Используем ondelete='SET NULL' чтобы история сохранялась при удалении родительских записей
+    video_recorder_id = db.Column(db.Integer, db.ForeignKey('video_recorders.id', ondelete='SET NULL'), nullable=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id', ondelete='SET NULL'), nullable=True)
     issued_by_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     issue_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     status = db.Column(db.String(20), default='issued', nullable=False)  # issued/returned
@@ -112,8 +115,9 @@ class VideoRecorderReturn(db.Model):
     __tablename__ = 'video_recorder_returns'
     
     id = db.Column(db.Integer, primary_key=True)
-    video_recorder_id = db.Column(db.Integer, db.ForeignKey('video_recorders.id'), nullable=False)
-    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'), nullable=False)
+    # Используем ondelete='SET NULL' чтобы история сохранялась при удалении родительских записей
+    video_recorder_id = db.Column(db.Integer, db.ForeignKey('video_recorders.id', ondelete='SET NULL'), nullable=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id', ondelete='SET NULL'), nullable=True)
     returned_by_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     return_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     

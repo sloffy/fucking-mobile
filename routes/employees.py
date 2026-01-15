@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, send_file, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
-from models import Employee, EmployeePhoto, User
+from models import Employee, EmployeePhoto, User, VideoRecorderIssue, VideoRecorderReturn
 from database import db
 import os
 
@@ -119,10 +119,21 @@ def delete_employee(employee_id):
             os.remove(photo_path)
         db.session.delete(employee.photo)
     
-    db.session.delete(employee)
-    db.session.commit()
-    
-    return jsonify({'message': 'Сотрудник удалён'}), 200
+    try:
+        # Удаляем сотрудника, история выдач/возвратов сохранится
+        # (внешние ключи установятся в NULL благодаря ondelete='SET NULL')
+        db.session.delete(employee)
+        db.session.commit()
+        return jsonify({'message': 'Сотрудник удалён'}), 200
+    except Exception as e:
+        db.session.rollback()
+        # Если БД не поддерживает SET NULL, обновляем внешние ключи вручную
+        from models import VideoRecorderIssue, VideoRecorderReturn
+        VideoRecorderIssue.query.filter_by(employee_id=employee_id).update({'employee_id': None})
+        VideoRecorderReturn.query.filter_by(employee_id=employee_id).update({'employee_id': None})
+        db.session.delete(employee)
+        db.session.commit()
+        return jsonify({'message': 'Сотрудник удалён, история сохранена'}), 200
 
 @employees_bp.route('/<int:employee_id>/photo', methods=['POST'])
 @jwt_required()
